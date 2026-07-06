@@ -1,0 +1,7 @@
+.tmp/
+tmp/
+*.log
+*.tmp
+sessions/
+.codex_oracle/
+Docs_local/

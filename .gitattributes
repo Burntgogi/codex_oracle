@@ -1,0 +1,9 @@
+/.gitattributes text eol=lf
+/LICENSE text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.exe binary
+bin/codex_oracle_darwin_* binary

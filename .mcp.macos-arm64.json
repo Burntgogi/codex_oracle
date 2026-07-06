@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "codex_oracle": {
+      "command": "./bin/codex_oracle_darwin_arm64",
+      "args": [],
+      "cwd": ".",
+      "tool_timeout_sec": 1800,
+      "env_vars": [
+        "ORACLE_HOME_DIR",
+        "ORACLE_BROWSER_PROFILE_DIR",
+        "ORACLE_CHATGPT_URL",
+        "ORACLE_ENGINE",
+        "ORACLE_SESSION_CONTENT_MODE"
+      ]
+    }
+  }
+}
