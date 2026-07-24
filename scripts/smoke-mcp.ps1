@@ -22,6 +22,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $FixtureFile)) -and
 if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $FixtureFile))) {
   throw "Fixture file not found under plugin root: $FixtureFile"
 }
+$fixtureSourcePath = (Resolve-Path -LiteralPath (Join-Path $repoRoot $FixtureFile)).Path
 
 function Invoke-McpJsonLines {
   param(
@@ -72,7 +73,25 @@ function Set-Utf8NoBomText {
   [System.IO.File]::WriteAllText($Path, $Value, $encoding)
 }
 
+function Get-JsonStringProperty {
+  param(
+    [object]$Value,
+    [string]$Name
+  )
+
+  $property = $Value.PSObject.Properties[$Name]
+  if ($null -eq $property) {
+    return ""
+  }
+  return [string]$property.Value
+}
+
 $homeDir = Join-Path $env:TEMP ("codex_oracle-smoke-" + [guid]::NewGuid().ToString())
+$fixtureWorkspace = Join-Path $env:TEMP ("codex_oracle-workspace-" + [guid]::NewGuid().ToString())
+$fixtureWorkspaceFile = "workspace-fixture.md"
+$outsideRoot = Join-Path $env:TEMP ("codex_oracle-outside-" + [guid]::NewGuid().ToString())
+$outsideDescendant = "outside-descendant.md"
+$outsideGlob = Join-Path $outsideRoot "**\*.md"
 $sessionId = "smoke-session"
 $sessionDir = Join-Path $homeDir ("sessions\" + $sessionId)
 $finalizeSessionId = "smoke-chrome-assisted"
@@ -82,7 +101,11 @@ $chromePath = Join-Path $homeDir "chrome.exe"
 New-Item -ItemType Directory -Force -Path $sessionDir | Out-Null
 New-Item -ItemType Directory -Force -Path $finalizeSessionDir | Out-Null
 New-Item -ItemType Directory -Force -Path $profileDir | Out-Null
+New-Item -ItemType Directory -Force -Path $fixtureWorkspace | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $outsideRoot "nested") | Out-Null
 Set-Utf8NoBomText -Path $chromePath -Value "fake"
+Set-Utf8NoBomText -Path (Join-Path $fixtureWorkspace $fixtureWorkspaceFile) -Value (Get-Content -LiteralPath $fixtureSourcePath -Raw)
+Set-Utf8NoBomText -Path (Join-Path $outsideRoot (Join-Path "nested" $outsideDescendant)) -Value "outside"
 
 $metadata = @{
   id = $sessionId
@@ -131,7 +154,8 @@ try {
   $consultArgs = @{
     preset = "chatgpt-pro-heavy"
     prompt = "smoke review"
-    files = @($FixtureFile)
+    files = @($fixtureWorkspaceFile, $outsideRoot, $outsideGlob)
+    workspaceRoot = $fixtureWorkspace
     browserAttachments = "always"
     browserBundleFormat = "zip"
     dryRun = $true
@@ -139,7 +163,8 @@ try {
   $prepareArgs = @{
     preset = "chatgpt-pro-heavy"
     prompt = "smoke chrome handoff"
-    files = @($FixtureFile)
+    files = @($fixtureWorkspaceFile)
+    workspaceRoot = $fixtureWorkspace
     browserThinkingTime = "extended"
     browserFollowUps = @("summarize risk")
   }
@@ -177,11 +202,39 @@ try {
       throw "missing tool $name"
     }
   }
-  if ($responses[9].result.serverInfo.version -ne "0.1.1") {
-    throw "initialize did not return serverInfo.version 0.1.1"
+  foreach ($name in @("consult", "consult_prepare")) {
+    $tool = $responses[0].result.tools | Where-Object { $_.name -eq $name } | Select-Object -First 1
+    $workspaceRootProperty = $tool.inputSchema.properties.PSObject.Properties["workspaceRoot"]
+    if ($null -eq $workspaceRootProperty -or $workspaceRootProperty.Value.type -ne "string") {
+      throw "$name input schema missing string workspaceRoot"
+    }
+  }
+  if ($responses[9].result.serverInfo.version -ne "0.1.2") {
+    throw "initialize did not return serverInfo.version 0.1.2"
   }
   if ($responses[1].result.structuredContent.status -ne "dry-run") {
     throw "consult dryRun did not return dry-run"
+  }
+  if (@($responses[1].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
+    throw "consult dryRun did not resolve fixture from workspaceRoot"
+  }
+  $outsideIgnored = @($responses[1].result.structuredContent.ignored)
+  if ($outsideIgnored.Count -ne 2) {
+    throw "consult dryRun did not reject both outside directory and glob"
+  }
+  foreach ($ignored in $outsideIgnored) {
+    $pattern = Get-JsonStringProperty -Value $ignored -Name "pattern"
+    $path = Get-JsonStringProperty -Value $ignored -Name "path"
+    $reason = Get-JsonStringProperty -Value $ignored -Name "reason"
+    if (@($outsideRoot, $outsideGlob) -notcontains $pattern) {
+      throw "consult dryRun returned an unexpected outside rejection pattern: $pattern"
+    }
+    if ($reason -ne "outside root") {
+      throw "consult dryRun did not mark outside input as outside root: $reason"
+    }
+    if ((@($responses[1].result.structuredContent.resolved.files) + @($pattern, $path, $reason) -join "`n") -match [regex]::Escape($outsideDescendant)) {
+      throw "consult dryRun leaked an outside descendant path"
+    }
   }
   if ($responses[1].result.structuredContent.attachmentPlan.mode -ne "zip") {
     throw "forced attachment dryRun did not choose zip"
@@ -228,6 +281,9 @@ try {
   if ($responses[4].result.structuredContent.status -ne "handoff-required") {
     throw "consult_prepare did not return handoff-required"
   }
+  if (@($responses[4].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
+    throw "consult_prepare did not resolve fixture from workspaceRoot"
+  }
   if ($responses[4].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
     throw "consult_prepare did not return gpt-5.6-sol-pro handoff"
   }
@@ -271,6 +327,10 @@ try {
     throw "consult_prepare did not return handoff submission promptText"
   }
   $preparedSessionId = $responses[4].result.structuredContent.sessionId
+  $preparedMeta = Get-Content -LiteralPath (Join-Path $homeDir ("sessions\" + $preparedSessionId + "\meta.json")) -Raw | ConvertFrom-Json
+  if ($preparedMeta.cwd -ne $fixtureWorkspace) {
+    throw "consult_prepare session cwd did not match workspaceRoot"
+  }
   $handoffPath = Join-Path $homeDir ("sessions\" + $preparedSessionId + "\artifacts\handoff.json")
   if (Test-Path -LiteralPath $handoffPath) {
     throw "consult_prepare wrote handoff artifact in default metadata mode"
@@ -299,5 +359,11 @@ try {
   $env:ORACLE_SESSION_CONTENT_MODE = $oldContentMode
   if (Test-Path -LiteralPath $homeDir) {
     Remove-Item -LiteralPath $homeDir -Recurse -Force
+  }
+  if (Test-Path -LiteralPath $fixtureWorkspace) {
+    Remove-Item -LiteralPath $fixtureWorkspace -Recurse -Force
+  }
+  if (Test-Path -LiteralPath $outsideRoot) {
+    Remove-Item -LiteralPath $outsideRoot -Recurse -Force
   }
 }

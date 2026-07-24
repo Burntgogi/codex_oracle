@@ -88,6 +88,19 @@ function Invoke-McpJsonLines {
   return $output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_ | ConvertFrom-Json }
 }
 
+function Get-JsonStringProperty {
+  param(
+    [object]$Value,
+    [string]$Name
+  )
+
+  $property = $Value.PSObject.Properties[$Name]
+  if ($null -eq $property) {
+    return ""
+  }
+  return [string]$property.Value
+}
+
 if (-not $SkipCodexList) {
   $pluginList = & codex plugin list
   if ($LASTEXITCODE -ne 0) {
@@ -103,13 +116,30 @@ if (-not $SkipCodexList) {
 }
 
 $homeDir = Join-Path $env:TEMP ("codex_oracle-installed-verify-" + [guid]::NewGuid().ToString())
+$fixtureWorkspace = Join-Path $env:TEMP ("codex_oracle-installed-workspace-" + [guid]::NewGuid().ToString())
+$fixtureWorkspaceFile = "workspace-fixture.md"
+$outsideRoot = Join-Path $env:TEMP ("codex_oracle-installed-outside-" + [guid]::NewGuid().ToString())
+$outsideDescendant = "outside-descendant.md"
+$outsideGlob = Join-Path $outsideRoot "**\*.md"
+New-Item -ItemType Directory -Force -Path $fixtureWorkspace | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $outsideRoot "nested") | Out-Null
+[System.IO.File]::WriteAllText(
+  (Join-Path $fixtureWorkspace $fixtureWorkspaceFile),
+  "workspace fixture",
+  (New-Object System.Text.UTF8Encoding -ArgumentList $false)
+)
+[System.IO.File]::WriteAllText(
+  (Join-Path $outsideRoot (Join-Path "nested" $outsideDescendant)),
+  "outside",
+  (New-Object System.Text.UTF8Encoding -ArgumentList $false)
+)
 $oldHome = $env:ORACLE_HOME_DIR
 try {
   $env:ORACLE_HOME_DIR = $homeDir
   $requests = @(
     @{ jsonrpc = "2.0"; id = 1; method = "tools/list"; params = @{} },
-    @{ jsonrpc = "2.0"; id = 2; method = "tools/call"; params = @{ name = "consult"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "installed plugin dry-run check"; files = @("README.md"); dryRun = $true } } },
-    @{ jsonrpc = "2.0"; id = 3; method = "tools/call"; params = @{ name = "consult_prepare"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "installed prepare check"; files = @("README.md"); browserThinkingTime = "extended" } } }
+    @{ jsonrpc = "2.0"; id = 2; method = "tools/call"; params = @{ name = "consult"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "installed plugin dry-run check"; files = @($fixtureWorkspaceFile, $outsideRoot, $outsideGlob); workspaceRoot = $fixtureWorkspace; dryRun = $true } } },
+    @{ jsonrpc = "2.0"; id = 3; method = "tools/call"; params = @{ name = "consult_prepare"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "installed prepare check"; files = @($fixtureWorkspaceFile); workspaceRoot = $fixtureWorkspace; browserThinkingTime = "extended" } } }
   )
   $inputJson = ($requests | ForEach-Object { $_ | ConvertTo-Json -Depth 12 -Compress }) -join "`n"
   Push-Location $PluginRoot
@@ -125,8 +155,36 @@ try {
       throw "installed tools/list missing $name"
     }
   }
+  foreach ($name in @("consult", "consult_prepare")) {
+    $tool = $responses[0].result.tools | Where-Object { $_.name -eq $name } | Select-Object -First 1
+    $workspaceRootProperty = $tool.inputSchema.properties.PSObject.Properties["workspaceRoot"]
+    if ($null -eq $workspaceRootProperty -or $workspaceRootProperty.Value.type -ne "string") {
+      throw "installed $name input schema missing string workspaceRoot"
+    }
+  }
   if ($responses[1].result.structuredContent.status -ne "dry-run") {
     throw "installed consult dry-run did not return dry-run"
+  }
+  if (@($responses[1].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
+    throw "installed consult did not resolve fixture from workspaceRoot"
+  }
+  $outsideIgnored = @($responses[1].result.structuredContent.ignored)
+  if ($outsideIgnored.Count -ne 2) {
+    throw "installed consult did not reject both outside directory and glob"
+  }
+  foreach ($ignored in $outsideIgnored) {
+    $pattern = Get-JsonStringProperty -Value $ignored -Name "pattern"
+    $path = Get-JsonStringProperty -Value $ignored -Name "path"
+    $reason = Get-JsonStringProperty -Value $ignored -Name "reason"
+    if (@($outsideRoot, $outsideGlob) -notcontains $pattern) {
+      throw "installed consult returned an unexpected outside rejection pattern: $pattern"
+    }
+    if ($reason -ne "outside root") {
+      throw "installed consult did not mark outside input as outside root: $reason"
+    }
+    if ((@($responses[1].result.structuredContent.resolved.files) + @($pattern, $path, $reason) -join "`n") -match [regex]::Escape($outsideDescendant)) {
+      throw "installed consult leaked an outside descendant path"
+    }
   }
   if ($responses[1].result.structuredContent.bundle.preview -notmatch "untrusted reference material") {
     throw "installed consult dry-run preview missing untrusted-context preamble"
@@ -142,6 +200,9 @@ try {
   }
   if ($responses[2].result.structuredContent.status -ne "handoff-required") {
     throw "installed consult_prepare did not return handoff-required"
+  }
+  if (@($responses[2].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
+    throw "installed consult_prepare did not resolve fixture from workspaceRoot"
   }
   if ($responses[2].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
     throw "installed consult_prepare did not return gpt-5.6-sol-pro handoff"
@@ -179,10 +240,21 @@ try {
   if ([string]::IsNullOrWhiteSpace($responses[2].result.structuredContent.handoff.submission.promptText)) {
     throw "installed consult_prepare did not return handoff submission promptText"
   }
+  $preparedSessionId = $responses[2].result.structuredContent.sessionId
+  $preparedMeta = Get-Content -LiteralPath (Join-Path $homeDir ("sessions\" + $preparedSessionId + "\meta.json")) -Raw | ConvertFrom-Json
+  if ($preparedMeta.cwd -ne $fixtureWorkspace) {
+    throw "installed consult_prepare session cwd did not match workspaceRoot"
+  }
 } finally {
   $env:ORACLE_HOME_DIR = $oldHome
   if (Test-Path -LiteralPath $homeDir) {
     Remove-Item -LiteralPath $homeDir -Recurse -Force
+  }
+  if (Test-Path -LiteralPath $fixtureWorkspace) {
+    Remove-Item -LiteralPath $fixtureWorkspace -Recurse -Force
+  }
+  if (Test-Path -LiteralPath $outsideRoot) {
+    Remove-Item -LiteralPath $outsideRoot -Recurse -Force
   }
 }
 

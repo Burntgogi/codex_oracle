@@ -1,6 +1,6 @@
 # Agent Install Guide
 
-This guide is written for a Codex app agent installing `codex_oracle` from this release repository.
+This guide is written for a Codex app agent installing `codex_oracle` `v0.1.2` from this release repository.
 
 This is a developer preview. The Windows binary is unsigned, macOS binaries are not notarized, and
 macOS execution has not been verified on physical macOS hardware in this development environment.
@@ -66,6 +66,13 @@ Do not delete the old marketplace or source tree unless the user explicitly asks
 cleanup. Removing the installed entry is enough to prevent ordinary Codex invocation confusion.
 
 ## Preflight
+
+Pin the release tag instead of following moving `main`:
+
+```powershell
+git clone --branch v0.1.2 --depth 1 https://github.com/Burntgogi/codex_oracle.git
+cd codex_oracle
+```
 
 Run from the release repository root on Windows:
 

@@ -1,16 +1,16 @@
 {
   "name": "codex_oracle",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node-free Codex Oracle-style second-opinion plugin implemented in Go.",
   "author": {
-    "name": "Local developer"
+    "name": "Burntgogi"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "codex_oracle",
     "shortDescription": "Ask a ChatGPT Pro browser session for a second opinion from Codex.",
     "longDescription": "codex_oracle adapts the useful Oracle MCP/browser workflow into a Node-free Codex plugin surface. It exposes consult dry-runs, session lookup, consult_prepare and consult_finalize for Chrome-assisted handoff through the external @Chrome companion plugin, durable running/completed/failed session metadata, handoff digest/nonce/privacy checks, and text/ZIP context bundle primitives. Preferred live use is the Chrome-assisted path with the user's ordinary signed-in Chrome session; private-profile direct CDP is legacy diagnostic fallback only. Browser mode does not require OPENAI_API_KEY forwarding.",
-    "developerName": "Local developer",
+    "developerName": "Burntgogi",
     "category": "Productivity",
     "capabilities": ["mcp", "skills"],
     "brandColor": "#315BFF",
