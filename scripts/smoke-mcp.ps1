@@ -163,7 +163,9 @@ try {
     @{ jsonrpc = "2.0"; id = 4; method = "tools/call"; params = @{ name = "smoke_check"; arguments = @{ dryRun = $true } } },
     @{ jsonrpc = "2.0"; id = 5; method = "tools/call"; params = @{ name = "consult_prepare"; arguments = $prepareArgs } },
     @{ jsonrpc = "2.0"; id = 6; method = "tools/call"; params = @{ name = "consult_finalize"; arguments = $finalizeArgs } },
-    @{ jsonrpc = "2.0"; id = 7; method = "tools/call"; params = @{ name = "session_delete"; arguments = @{ id = $sessionId } } }
+    @{ jsonrpc = "2.0"; id = 7; method = "tools/call"; params = @{ name = "session_delete"; arguments = @{ id = $sessionId } } },
+    @{ jsonrpc = "2.0"; id = 8; method = "tools/call"; params = @{ name = "consult"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "legacy model alias smoke check"; model = "gpt-5.5-pro"; dryRun = $true } } },
+    @{ jsonrpc = "2.0"; id = 9; method = "initialize"; params = @{} }
   )
   $inputJson = ($requests | ForEach-Object { $_ | ConvertTo-Json -Depth 12 -Compress }) -join "`n"
   $responses = @(Invoke-McpJsonLines -ExecutablePath $BinaryPath -InputJson $inputJson -WorkingDirectory $repoRoot)
@@ -174,6 +176,9 @@ try {
       throw "missing tool $name"
     }
   }
+  if ($responses[8].result.serverInfo.version -ne "0.1.1") {
+    throw "initialize did not return serverInfo.version 0.1.1"
+  }
   if ($responses[1].result.structuredContent.status -ne "dry-run") {
     throw "consult dryRun did not return dry-run"
   }
@@ -182,6 +187,33 @@ try {
   }
   if ($responses[1].result.structuredContent.bundle.preview -notmatch "untrusted reference material") {
     throw "consult dryRun bundle preview missing untrusted-context preamble"
+  }
+  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
+    throw "consult dryRun did not resolve to gpt-5.6-sol-pro"
+  }
+  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
+    throw "consult dryRun did not return GPT-5.6 Sol desired model"
+  }
+  if ($responses[1].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
+    throw "consult dryRun did not return Pro thinking label"
+  }
+  if ($responses[7].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
+    throw "legacy model alias did not resolve to gpt-5.6-sol-pro"
+  }
+  if ($responses[7].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
+    throw "legacy model alias did not return GPT-5.6 Sol desired model"
+  }
+  if ($responses[7].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
+    throw "legacy model alias did not return Pro thinking label"
+  }
+  if ($responses[7].result.structuredContent.output -notmatch "(?i)normalized") {
+    throw "legacy model alias guidance omitted normalization action"
+  }
+  if ($responses[7].result.structuredContent.output -notmatch "gpt-5.5-pro") {
+    throw "legacy model alias guidance omitted gpt-5.5-pro"
+  }
+  if ($responses[7].result.structuredContent.output -notmatch "gpt-5.6-sol-pro") {
+    throw "legacy model alias guidance omitted gpt-5.6-sol-pro"
   }
   if ($responses[2].result.structuredContent.reattachable -ne $true) {
     throw "reattach dryRun did not report reattachable"
@@ -192,14 +224,14 @@ try {
   if ($responses[4].result.structuredContent.status -ne "handoff-required") {
     throw "consult_prepare did not return handoff-required"
   }
-  if ($responses[4].result.structuredContent.handoff.model -ne "gpt-5.5-pro") {
-    throw "consult_prepare did not return gpt-5.5-pro handoff"
+  if ($responses[4].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
+    throw "consult_prepare did not return gpt-5.6-sol-pro handoff"
   }
-  if ($responses[4].result.structuredContent.handoff.modelLabel -ne "GPT-5.5") {
-    throw "consult_prepare did not return GPT-5.5 model label"
+  if ($responses[4].result.structuredContent.handoff.modelLabel -ne "GPT-5.6 Sol") {
+    throw "consult_prepare did not return GPT-5.6 Sol model label"
   }
-  if ($responses[4].result.structuredContent.handoff.thinkingLabel -ne "Pro 확장") {
-    throw "consult_prepare did not return Pro 확장 thinking label"
+  if ($responses[4].result.structuredContent.handoff.thinkingLabel -ne "Pro") {
+    throw "consult_prepare did not return Pro thinking label"
   }
   if ([string]::IsNullOrWhiteSpace($responses[4].result.structuredContent.handoff.handoffDigest)) {
     throw "consult_prepare did not return handoff digest"

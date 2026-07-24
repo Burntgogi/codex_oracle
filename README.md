@@ -15,7 +15,7 @@
 **개발자 프리뷰.** 이 프로젝트는 GitHub에서 로컬 Codex 플러그인을 직접 설치할 수
 있는 개발자와 초기 Codex 사용자를 대상으로 합니다.
 
-`codex_oracle`은 Codex app 안에서 GPT 5.5 모델과 `Pro 확장`을 이용해 계획,
+`codex_oracle`은 Codex app 안에서 GPT-5.6 Sol 모델과 `Pro`를 이용해 계획,
 설계, 코드 검토, 의사결정 피드백을 받기 위한 Codex 플러그인입니다.
 
 이 프로젝트는 [steipete/oracle](https://github.com/steipete/oracle)의 유용한 아이디어에서
@@ -27,7 +27,7 @@
 - Codex app
 - `@Chrome` 플러그인 (`chrome@openai-bundled`)
 - ChatGPT에 로그인된 사용자의 Chrome 세션
-- GPT 5.5와 `Pro 확장`을 사용할 수 있는 계정 상태
+- GPT-5.6 Sol 모델과 `Pro`에 접근할 수 있고 rollout에 포함된 계정 상태
 
 프리뷰 배포와 라이브 검증은 `codex_oracle@personal`을 기준으로 합니다.
 
@@ -66,6 +66,9 @@ bundle 크기를 먼저 확인하세요. ChatGPT 웹 입력창이 큰 inline pro
 
 설치와 에이전트용 절차는 [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md)를 보세요.
 
+호환성: 호출자는 이전 `gpt-5.5-pro` 별칭을 계속 제공할 수 있지만, 준비된 handoff는 항상
+`gpt-5.6-sol-pro`를 대상으로 합니다.
+
 ## 현재 검증 상태
 
 GitHub 개발자 프리뷰 기준으로 Windows 스모크와 Chrome-assisted live 검증을 완료했습니다.
@@ -81,7 +84,7 @@ GitHub 개발자 프리뷰 기준으로 Windows 스모크와 Chrome-assisted liv
 **Developer Preview.** This project is intended for developers and early Codex users who are
 comfortable installing local Codex plugins from GitHub.
 
-`codex_oracle` is a Codex plugin for using GPT 5.5 with `Pro 확장` from the Codex app
+`codex_oracle` is a Codex plugin for using GPT-5.6 Sol with `Pro` from the Codex app
 to get planning, design, code review, and decision-making feedback.
 
 This project is inspired by [steipete/oracle](https://github.com/steipete/oracle). Thanks to Oracle
@@ -93,7 +96,7 @@ model, and bring the review back into the coding session.
 - Codex app
 - `@Chrome` plugin (`chrome@openai-bundled`)
 - A user Chrome session already signed into ChatGPT
-- Account access to GPT 5.5 and `Pro 확장`
+- Account access and rollout availability for GPT-5.6 Sol with `Pro`
 
 Preview release use and live verification are based on `codex_oracle@personal`.
 
@@ -132,6 +135,9 @@ check file resolution and bundle size. If ChatGPT Web rejects a large inline pro
 returns a pasted-text attachment submission mode and a short composer prompt in the handoff.
 
 For installation and agent-facing steps, see [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md).
+
+Compatibility: callers may still provide the legacy `gpt-5.5-pro` alias, but prepared handoffs
+always target `gpt-5.6-sol-pro`.
 
 ## Current Validation Status
 

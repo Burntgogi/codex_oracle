@@ -1,6 +1,6 @@
 {
   "name": "codex_oracle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Node-free Codex Oracle-style second-opinion plugin implemented in Go.",
   "author": {
     "name": "Local developer"
@@ -20,7 +20,7 @@
     "defaultPrompt": [
       "Ask codex_oracle for a second-opinion review.",
       "Prepare a ChatGPT Pro handoff with current context.",
-      "Review this plan through GPT Web and Pro extension."
+      "Review this plan through GPT Web with GPT-5.6 Sol and Pro."
     ]
   },
   "mcpServers": "./.mcp.json"

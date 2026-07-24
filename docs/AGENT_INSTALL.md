@@ -22,11 +22,12 @@ The scripts below do not write unless `-Apply` or `--apply` is provided.
 
 ## Required Companion Plugin
 
-`codex_oracle` does not embed Chrome. Live GPT 5.5 + `Pro 확장` use requires:
+`codex_oracle` does not embed Chrome. Live GPT-5.6 Sol with `Pro` use requires:
 
 - Codex app
 - `@Chrome` plugin: `chrome@openai-bundled`
 - the user's ordinary Chrome session signed into ChatGPT
+- account access and rollout availability for GPT-5.6 Sol with `Pro`
 
 The MCP handoff declares this dependency as:
 
@@ -183,7 +184,8 @@ distribution, move from ad hoc local-copy install to a managed release channel:
 5. Run `consult` with `dryRun:true`.
 6. Run `consult_prepare`.
 7. Use `@Chrome` to create a fresh ChatGPT conversation.
-8. Select GPT 5.5 and confirm `Pro 확장`.
+8. Select GPT-5.6 Sol and confirm `Pro`. During UI rollout, `Pro 확장` or `프로 확장` may be
+   accepted as equivalent visible mode evidence.
 9. Submit according to `handoff.submission.mode`. For `inline`, send
    `handoff.submission.promptText`. For `pasted-text-attachment`, paste/attach `handoff.prompt`,
    save or close the pasted-text editor modal, then send `handoff.submission.promptText`. A user

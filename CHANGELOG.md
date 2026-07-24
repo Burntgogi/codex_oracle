@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1-preview
+
+- Updated the default ChatGPT Web target to GPT-5.6 Sol with Pro.
+- Kept `gpt-5.5-pro` as an input-only compatibility alias that resolves to GPT-5.6 Sol Pro.
+- Added fail-closed model and Pro evidence checks.
+- Rebuilt Windows amd64, macOS arm64, and macOS amd64 binaries.
+
 ## 0.1.0-preview
 
 - Added the `codex_oracle` Codex plugin release package.

@@ -66,11 +66,20 @@ if missing:
     raise SystemExit(f"installed tools/list missing {sorted(missing)}")
 if responses[1]["result"]["structuredContent"]["status"] != "dry-run":
     raise SystemExit("consult dry-run did not return dry-run")
+resolved = responses[1]["result"]["structuredContent"]["resolved"]
+if resolved["model"] != "gpt-5.6-sol-pro":
+    raise SystemExit("consult dry-run did not resolve to gpt-5.6-sol-pro")
+if resolved["browser"]["desiredModel"] != "GPT-5.6 Sol":
+    raise SystemExit("consult dry-run did not return GPT-5.6 Sol desired model")
+if resolved["browser"]["thinkingLabel"] != "Pro":
+    raise SystemExit("consult dry-run did not return Pro thinking label")
 handoff = responses[2]["result"]["structuredContent"]["handoff"]
-if handoff["modelLabel"] != "GPT-5.5":
-    raise SystemExit("consult_prepare did not return GPT-5.5")
-if handoff["thinkingLabel"] != "Pro 확장":
-    raise SystemExit("consult_prepare did not return Pro 확장")
+if handoff["model"] != "gpt-5.6-sol-pro":
+    raise SystemExit("consult_prepare did not return gpt-5.6-sol-pro")
+if handoff["modelLabel"] != "GPT-5.6 Sol":
+    raise SystemExit("consult_prepare did not return GPT-5.6 Sol")
+if handoff["thinkingLabel"] != "Pro":
+    raise SystemExit("consult_prepare did not return Pro")
 if handoff["orchestration"]["requiredPlugin"] != "chrome@openai-bundled":
     raise SystemExit("consult_prepare did not declare chrome@openai-bundled")
 if handoff["orchestration"].get("allowAutomaticSubmission") is not True:

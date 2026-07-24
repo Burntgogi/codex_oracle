@@ -1,7 +1,9 @@
-# codex_oracle 0.1.0-preview
+# codex_oracle Release Notes
 
-This is a developer preview for Codex users who want an Oracle-style second-opinion workflow using
-ChatGPT Web, GPT 5.5, and `Pro 확장` through the external `@Chrome` companion plugin.
+## 0.1.1-preview
+
+This developer preview targets an Oracle-style second-opinion workflow using ChatGPT Web,
+GPT-5.6 Sol with `Pro`, through the external `@Chrome` companion plugin.
 
 ## What Is Included
 
@@ -17,7 +19,10 @@ ChatGPT Web, GPT 5.5, and `Pro 확장` through the external `@Chrome` companion 
 - Codex app.
 - `chrome@openai-bundled` installed and enabled.
 - A Chrome session signed into ChatGPT.
-- Account access to GPT 5.5 and `Pro 확장`.
+- Account access and rollout availability for GPT-5.6 Sol with `Pro`.
+
+Compatibility: callers may still provide the input-only `gpt-5.5-pro` alias, but prepared handoffs
+always target `gpt-5.6-sol-pro`.
 
 ## Preview Limitations
 
@@ -33,3 +38,7 @@ ChatGPT Web, GPT 5.5, and `Pro 확장` through the external `@Chrome` companion 
 - `codex_oracle@personal` installed and enabled on Windows.
 - MCP smoke verification from the installed package.
 - `@Chrome` live handoff to ChatGPT and `consult_finalize` completion.
+
+## 0.1.0-preview
+
+The prior developer-preview package is superseded by the current GPT-5.6 Sol with `Pro` target.

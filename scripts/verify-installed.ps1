@@ -131,14 +131,26 @@ try {
   if ($responses[1].result.structuredContent.bundle.preview -notmatch "untrusted reference material") {
     throw "installed consult dry-run preview missing untrusted-context preamble"
   }
+  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
+    throw "installed consult dry-run did not resolve to gpt-5.6-sol-pro"
+  }
+  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
+    throw "installed consult dry-run did not return GPT-5.6 Sol desired model"
+  }
+  if ($responses[1].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
+    throw "installed consult dry-run did not return Pro thinking label"
+  }
   if ($responses[2].result.structuredContent.status -ne "handoff-required") {
     throw "installed consult_prepare did not return handoff-required"
   }
-  if ($responses[2].result.structuredContent.handoff.modelLabel -ne "GPT-5.5") {
-    throw "installed consult_prepare did not return GPT-5.5 model label"
+  if ($responses[2].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
+    throw "installed consult_prepare did not return gpt-5.6-sol-pro handoff"
   }
-  if ($responses[2].result.structuredContent.handoff.thinkingLabel -ne "Pro 확장") {
-    throw "installed consult_prepare did not return Pro 확장 thinking label"
+  if ($responses[2].result.structuredContent.handoff.modelLabel -ne "GPT-5.6 Sol") {
+    throw "installed consult_prepare did not return GPT-5.6 Sol model label"
+  }
+  if ($responses[2].result.structuredContent.handoff.thinkingLabel -ne "Pro") {
+    throw "installed consult_prepare did not return Pro thinking label"
   }
   if ([string]::IsNullOrWhiteSpace($responses[2].result.structuredContent.handoff.handoffDigest)) {
     throw "installed consult_prepare did not return handoff digest"

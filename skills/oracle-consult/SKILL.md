@@ -23,15 +23,18 @@ Use this skill when a second model should review a focused prompt and file set.
    for live review.
 7. Stop for login, CAPTCHA, human-verification, wrong-domain, or unexpected-sensitive-file
    blockers; do not bypass them.
-8. For the `chatgpt-pro-heavy` preset, treat model evidence as two controls: select GPT 5.5 as the
-   model and confirm `Pro 확장` as the thinking/mode label. Do not require a single visible
-   `GPT-5.5 Pro` string.
-9. Pass `handoffDigest` and `handoffNonce` from the prepared handoff into `consult_finalize`.
-10. Treat the answer as advisory and verify against local files and tests.
-11. Check `sessions` before retrying a slow or incomplete live browser consult.
-12. Use `session_delete` when the local session folder should be removed after the answer is
+8. For the `chatgpt-pro-heavy` preset, treat model evidence as two controls: select `GPT-5.6 Sol`
+   as the model and confirm `Pro` as the thinking/mode label. During UI rollout, `Pro 확장` or
+   `프로 확장` may be accepted as equivalent visible mode evidence. Do not require one combined
+   `GPT-5.6 Sol Pro` string. If either control is unavailable or ambiguous, stop before submission.
+9. Compatibility: callers may still provide `gpt-5.5-pro`, but prepared handoffs always target
+   `gpt-5.6-sol-pro`.
+10. Pass `handoffDigest` and `handoffNonce` from the prepared handoff into `consult_finalize`.
+11. Treat the answer as advisory and verify against local files and tests.
+12. Check `sessions` before retrying a slow or incomplete live browser consult.
+13. Use `session_delete` when the local session folder should be removed after the answer is
     returned to Codex.
-13. Treat the dry-run bundle size as a live-use gate. If `handoff.submission.mode` is
+14. Treat the dry-run bundle size as a live-use gate. If `handoff.submission.mode` is
     `pasted-text-attachment`, paste/attach `handoff.prompt` as the Oracle Consult Bundle, save/close
     any pasted-text editor modal, put `handoff.submission.promptText` in the composer, and send. If
     `handoff.submission.mode` is `inline`, send `handoff.submission.promptText` directly. Treat
