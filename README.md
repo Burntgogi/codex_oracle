@@ -1,18 +1,24 @@
 ![codex_oracle 픽셀아트 배너](assets/codex_oracle-title.png)
 
-# codex_oracle
+<h1 align="center">codex_oracle</h1>
 
-Codex의 작업 맥락을 **GPT-5.6 Sol + Pro** 웹 세션에 전달하고, 계획·설계·코드 검토
-피드백을 다시 Codex로 가져오는 로컬 플러그인입니다.
+<p align="center">
+  Codex의 작업 맥락을 <strong>GPT-5.6 Sol + Pro</strong> 웹 세션에 전달하고,<br>
+  계획·설계·코드 검토 피드백을 다시 Codex로 가져오는 로컬 플러그인입니다.
+</p>
 
-[![Developer Preview](https://img.shields.io/badge/status-developer_preview-f3a6ca)](RELEASE_NOTES.md)
-[![Release v0.1.2](https://img.shields.io/badge/release-v0.1.2-315BFF)](RELEASE_NOTES.md)
-[![Windows verified](https://img.shields.io/badge/Windows-live_verified-2f80ed)](RELEASE_NOTES.md#검증-결과)
-[![macOS dry-run](https://img.shields.io/badge/macOS-dry--run_only-8a78d6)](RELEASE_NOTES.md#알려진-제한)
-[![MIT License](https://img.shields.io/badge/license-MIT-3aa675)](LICENSE)
+<p align="center">
+  <a href="RELEASE_NOTES.md"><img src="https://img.shields.io/badge/status-developer_preview-f3a6ca" alt="Developer Preview"></a>
+  <a href="RELEASE_NOTES.md"><img src="https://img.shields.io/badge/release-v0.1.2-315BFF" alt="Release v0.1.2"></a>
+  <a href="RELEASE_NOTES.md#검증-결과"><img src="https://img.shields.io/badge/Windows-live_verified-2f80ed" alt="Windows verified"></a>
+  <a href="RELEASE_NOTES.md#알려진-제한"><img src="https://img.shields.io/badge/macOS-dry--run_only-8a78d6" alt="macOS dry-run"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3aa675" alt="MIT License"></a>
+</p>
 
-**한국어** · [English](README.en.md) · [빠른 설치](#빠른-설치) · [작동 방식](#작동-방식) ·
-[지원 범위](#지원-범위) · [보안](#보안)
+<p align="center">
+  <strong>한국어</strong> · <a href="README.en.md">English</a> · <a href="#빠른-설치">빠른 설치</a> ·
+  <a href="#작동-방식">작동 방식</a> · <a href="#지원-범위">지원 범위</a> · <a href="#보안">보안</a>
+</p>
 
 > **개발자 프리뷰:** Codex app에서 GitHub 플러그인을 직접 설치하고 검증할 수 있는
 > 개발자와 초기 사용자를 대상으로 합니다.

@@ -1,18 +1,24 @@
 ![codex_oracle pixel-art banner](assets/codex_oracle-title.png)
 
-# codex_oracle
+<h1 align="center">codex_oracle</h1>
 
-A local Codex plugin that sends focused work context to **GPT-5.6 Sol + Pro** on ChatGPT Web and
-brings planning, design, and code-review feedback back into Codex.
+<p align="center">
+  A local Codex plugin that sends focused work context to <strong>GPT-5.6 Sol + Pro</strong><br>
+  on ChatGPT Web and brings planning, design, and code-review feedback back into Codex.
+</p>
 
-[![Developer Preview](https://img.shields.io/badge/status-developer_preview-f3a6ca)](RELEASE_NOTES.en.md)
-[![Release v0.1.2](https://img.shields.io/badge/release-v0.1.2-315BFF)](RELEASE_NOTES.en.md)
-[![Windows verified](https://img.shields.io/badge/Windows-live_verified-2f80ed)](RELEASE_NOTES.en.md#verification-results)
-[![macOS dry-run](https://img.shields.io/badge/macOS-dry--run_only-8a78d6)](RELEASE_NOTES.en.md#known-limitations)
-[![MIT License](https://img.shields.io/badge/license-MIT-3aa675)](LICENSE)
+<p align="center">
+  <a href="RELEASE_NOTES.en.md"><img src="https://img.shields.io/badge/status-developer_preview-f3a6ca" alt="Developer Preview"></a>
+  <a href="RELEASE_NOTES.en.md"><img src="https://img.shields.io/badge/release-v0.1.2-315BFF" alt="Release v0.1.2"></a>
+  <a href="RELEASE_NOTES.en.md#verification-results"><img src="https://img.shields.io/badge/Windows-live_verified-2f80ed" alt="Windows verified"></a>
+  <a href="RELEASE_NOTES.en.md#known-limitations"><img src="https://img.shields.io/badge/macOS-dry--run_only-8a78d6" alt="macOS dry-run"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3aa675" alt="MIT License"></a>
+</p>
 
-[한국어](README.md) · **English** · [Quick install](#quick-install) · [How it works](#how-it-works) ·
-[Support](#support) · [Security](#security)
+<p align="center">
+  <a href="README.md">한국어</a> · <strong>English</strong> · <a href="#quick-install">Quick install</a> ·
+  <a href="#how-it-works">How it works</a> · <a href="#support">Support</a> · <a href="#security">Security</a>
+</p>
 
 > **Developer Preview:** Intended for developers and early users who are comfortable installing and
 > validating a GitHub-hosted plugin in the Codex app.
