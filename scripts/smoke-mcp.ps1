@@ -165,7 +165,8 @@ try {
     @{ jsonrpc = "2.0"; id = 6; method = "tools/call"; params = @{ name = "consult_finalize"; arguments = $finalizeArgs } },
     @{ jsonrpc = "2.0"; id = 7; method = "tools/call"; params = @{ name = "session_delete"; arguments = @{ id = $sessionId } } },
     @{ jsonrpc = "2.0"; id = 8; method = "tools/call"; params = @{ name = "consult"; arguments = @{ preset = "chatgpt-pro-heavy"; prompt = "legacy model alias smoke check"; model = "gpt-5.5-pro"; dryRun = $true } } },
-    @{ jsonrpc = "2.0"; id = 9; method = "initialize"; params = @{} }
+    @{ jsonrpc = "2.0"; id = 9; method = "tools/call"; params = @{ name = "consult"; arguments = @{ engine = "browser"; prompt = "explicit gpt-5.5 browser model smoke check"; model = "gpt-5.5"; browserThinkingTime = "extended"; dryRun = $true } } },
+    @{ jsonrpc = "2.0"; id = 10; method = "initialize"; params = @{} }
   )
   $inputJson = ($requests | ForEach-Object { $_ | ConvertTo-Json -Depth 12 -Compress }) -join "`n"
   $responses = @(Invoke-McpJsonLines -ExecutablePath $BinaryPath -InputJson $inputJson -WorkingDirectory $repoRoot)
@@ -176,7 +177,7 @@ try {
       throw "missing tool $name"
     }
   }
-  if ($responses[8].result.serverInfo.version -ne "0.1.1") {
+  if ($responses[9].result.serverInfo.version -ne "0.1.1") {
     throw "initialize did not return serverInfo.version 0.1.1"
   }
   if ($responses[1].result.structuredContent.status -ne "dry-run") {
@@ -214,6 +215,9 @@ try {
   }
   if ($responses[7].result.structuredContent.output -notmatch "gpt-5.6-sol-pro") {
     throw "legacy model alias guidance omitted gpt-5.6-sol-pro"
+  }
+  if ($responses[8].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro" -or $responses[8].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol" -or $responses[8].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
+    throw "explicit browser gpt-5.5 did not canonicalize to gpt-5.6-sol-pro / GPT-5.6 Sol / Pro"
   }
   if ($responses[2].result.structuredContent.reattachable -ne $true) {
     throw "reattach dryRun did not report reattachable"

@@ -12,7 +12,7 @@ GPT-5.6 Sol with `Pro`, through the external `@Chrome` companion plugin.
 - Cross-compiled Go MCP server binaries for macOS arm64 and macOS amd64.
 - Dry-run-first install scripts.
 - SHA-256 checksums.
-- Live E2E checklist and Windows live E2E evidence.
+- Windows live E2E was completed and verified.
 
 ## Requirements
 
