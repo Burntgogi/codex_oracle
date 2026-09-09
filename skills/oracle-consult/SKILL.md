@@ -11,31 +11,37 @@ Use this skill when a second model should review a focused prompt and file set.
 
 1. Start with `consult` and `dryRun:true`.
 2. Keep the file set small and specific.
-3. When `files` is non-empty, pass the active Codex workspace root in `workspaceRoot`.
-4. Do not attach secrets, `.env` files, private keys, browser cookies, or token dumps.
-5. Prefer `preset:"chatgpt-pro-heavy"` when the operator wants ChatGPT Pro browser mode.
-6. Prefer the Chrome-assisted workflow: call `consult_prepare`, use external `@Chrome`
+3. Do not attach secrets, `.env` files, private keys, browser cookies, or token dumps.
+4. Prefer `preset:"chatgpt-pro-heavy"` when the operator wants ChatGPT Pro browser mode.
+5. Prefer the Chrome-assisted workflow: call `consult_prepare`, use external `@Chrome`
    (`chrome@openai-bundled`) to operate the user's signed-in ChatGPT tab, then call
    `consult_finalize`.
    A user request that invokes `codex_oracle` with a prompt/files authorizes submitting that
    prepared handoff to `chatgpt.com` through `@Chrome`; do not ask for a second send confirmation.
-7. Treat `login_setup`, `smoke_check`, and direct CDP as legacy diagnostics, not the preferred live
+6. Treat `login_setup`, `smoke_check`, and direct CDP as legacy diagnostics, not the preferred live
    path. Non-dry-run `consult` direct-CDP execution is disabled by default; use `consult_prepare`
    for live review.
-8. Stop for login, CAPTCHA, human-verification, wrong-domain, or unexpected-sensitive-file
+7. Stop for login, CAPTCHA, human-verification, wrong-domain, or unexpected-sensitive-file
    blockers; do not bypass them.
-9. For the `chatgpt-pro-heavy` preset, treat model evidence as two controls: select `GPT-5.6 Sol`
+8. For the `chatgpt-pro-heavy` preset, treat model evidence as two controls: select `GPT-6 Astra`
    as the model and confirm `Pro` as the thinking/mode label. During UI rollout, `Pro 확장` or
    `프로 확장` may be accepted as equivalent visible mode evidence. Do not require one combined
-   `GPT-5.6 Sol Pro` string. If either control is unavailable or ambiguous, stop before submission.
-10. Compatibility: callers may still provide `gpt-5.5-pro`, but prepared handoffs always target
-   `gpt-5.6-sol-pro`.
-11. Pass `handoffDigest` and `handoffNonce` from the prepared handoff into `consult_finalize`.
-12. Treat the answer as advisory and verify against local files and tests.
-13. Check `sessions` before retrying a slow or incomplete live browser consult.
-14. Use `session_delete` when the local session folder should be removed after the answer is
+   `GPT-6 Astra Pro` string. If either control is unavailable or ambiguous, stop before submission.
+9. Compatibility: callers may still provide `gpt-5.5-pro`, but prepared handoffs always target
+   `gpt-6-astra-pro`.
+10. Pass `handoffDigest` and `handoffNonce` from the prepared handoff into `consult_finalize`.
+    After submission produces a durable `/c/<id>` URL, promptly call `consult_checkpoint` with
+    `checkpoint.arguments` returned by prepare plus `conversationUrl`. A `/c/WEB:...` URL is temporary:
+    wait in the same tab for its durable URL; never resubmit the prompt.
+    Save only the conversation URL; remove tracking query/fragment components. If saving fails,
+    retry it without submitting the review again. Use `reattach` to recover after interruption.
+11. Treat the answer as advisory and verify against local files and tests.
+12. Check `sessions` before retrying a slow or incomplete live browser consult.
+    Never substitute Sol for the requested Astra model. Existing sessions retain their original
+    model and handoff identity; resume their own conversation without creating an Astra replacement.
+13. Use `session_delete` when the local session folder should be removed after the answer is
     returned to Codex.
-15. Treat the dry-run bundle size as a live-use gate. If `handoff.submission.mode` is
+14. Treat the dry-run bundle size as a live-use gate. If `handoff.submission.mode` is
     `pasted-text-attachment`, paste/attach `handoff.prompt` as the Oracle Consult Bundle, save/close
     any pasted-text editor modal, put `handoff.submission.promptText` in the composer, and send. If
     `handoff.submission.mode` is `inline`, send `handoff.submission.promptText` directly. Treat
@@ -47,7 +53,6 @@ Use this skill when a second model should review a focused prompt and file set.
 {
   "preset": "chatgpt-pro-heavy",
   "prompt": "Review this implementation plan for missed risks and test gaps.",
-  "workspaceRoot": "<active-workspace-root>",
   "files": [
     "doc/implementation-plan.md",
     "doc/milestones.md"

@@ -209,8 +209,8 @@ try {
       throw "$name input schema missing string workspaceRoot"
     }
   }
-  if ($responses[9].result.serverInfo.version -ne "0.1.2") {
-    throw "initialize did not return serverInfo.version 0.1.2"
+  if ($responses[9].result.serverInfo.version -ne "0.1.6") {
+    throw "initialize did not return serverInfo.version 0.1.6"
   }
   if ($responses[1].result.structuredContent.status -ne "dry-run") {
     throw "consult dryRun did not return dry-run"
@@ -242,20 +242,20 @@ try {
   if ($responses[1].result.structuredContent.bundle.preview -notmatch "untrusted reference material") {
     throw "consult dryRun bundle preview missing untrusted-context preamble"
   }
-  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
-    throw "consult dryRun did not resolve to gpt-5.6-sol-pro"
+  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-6-astra-pro") {
+    throw "consult dryRun did not resolve to gpt-6-astra-pro"
   }
-  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
-    throw "consult dryRun did not return GPT-5.6 Sol desired model"
+  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-6 Astra") {
+    throw "consult dryRun did not return GPT-6 Astra desired model"
   }
   if ($responses[1].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
     throw "consult dryRun did not return Pro thinking label"
   }
-  if ($responses[7].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
-    throw "legacy model alias did not resolve to gpt-5.6-sol-pro"
+  if ($responses[7].result.structuredContent.resolved.model -ne "gpt-6-astra-pro") {
+    throw "legacy model alias did not resolve to gpt-6-astra-pro"
   }
-  if ($responses[7].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
-    throw "legacy model alias did not return GPT-5.6 Sol desired model"
+  if ($responses[7].result.structuredContent.resolved.browser.desiredModel -ne "GPT-6 Astra") {
+    throw "legacy model alias did not return GPT-6 Astra desired model"
   }
   if ($responses[7].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
     throw "legacy model alias did not return Pro thinking label"
@@ -266,11 +266,11 @@ try {
   if ($responses[7].result.structuredContent.output -notmatch "gpt-5.5-pro") {
     throw "legacy model alias guidance omitted gpt-5.5-pro"
   }
-  if ($responses[7].result.structuredContent.output -notmatch "gpt-5.6-sol-pro") {
-    throw "legacy model alias guidance omitted gpt-5.6-sol-pro"
+  if ($responses[7].result.structuredContent.output -notmatch "gpt-6-astra-pro") {
+    throw "legacy model alias guidance omitted gpt-6-astra-pro"
   }
-  if ($responses[8].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro" -or $responses[8].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol" -or $responses[8].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
-    throw "explicit browser gpt-5.5 did not canonicalize to gpt-5.6-sol-pro / GPT-5.6 Sol / Pro"
+  if ($responses[8].result.structuredContent.resolved.model -ne "gpt-6-astra-pro" -or $responses[8].result.structuredContent.resolved.browser.desiredModel -ne "GPT-6 Astra" -or $responses[8].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
+    throw "explicit browser gpt-5.5 did not canonicalize to gpt-6-astra-pro / GPT-6 Astra / Pro"
   }
   if ($responses[2].result.structuredContent.reattachable -ne $true) {
     throw "reattach dryRun did not report reattachable"
@@ -284,11 +284,11 @@ try {
   if (@($responses[4].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
     throw "consult_prepare did not resolve fixture from workspaceRoot"
   }
-  if ($responses[4].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
-    throw "consult_prepare did not return gpt-5.6-sol-pro handoff"
+  if ($responses[4].result.structuredContent.handoff.model -ne "gpt-6-astra-pro") {
+    throw "consult_prepare did not return gpt-6-astra-pro handoff"
   }
-  if ($responses[4].result.structuredContent.handoff.modelLabel -ne "GPT-5.6 Sol") {
-    throw "consult_prepare did not return GPT-5.6 Sol model label"
+  if ($responses[4].result.structuredContent.handoff.modelLabel -ne "GPT-6 Astra") {
+    throw "consult_prepare did not return GPT-6 Astra model label"
   }
   if ($responses[4].result.structuredContent.handoff.thinkingLabel -ne "Pro") {
     throw "consult_prepare did not return Pro thinking label"

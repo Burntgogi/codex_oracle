@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.6
+
+- Limit personal-install copying to shipped roots, excluding local backups and unknown private directories.
+- Refresh the banner to Astra and record the installed 0.1.6 web round-trip verification.
+- Stage and hash-check installation files; retain backups and roll back handled replacement failures.
+- Preserve marketplace settings and plugin order.
+- Add Windows installed/running version diagnostics and parse Codex registration as JSON.
+
+- Target GPT-6 Astra with Pro for new Chrome handoffs; preserve legacy session identity.
+- Save durable conversation URLs with consult_checkpoint and recover without resubmission.
+- Preserve retryability when session result writes fail; keep content private in metadata mode.
+- Explain temporary WEB: URL retries and fix named argument forwarding in verification scripts.
+- Include buildable Go sources, remove machine-specific paths, and add a public-file privacy check.
+- Preserve existing branding and installation scripts. macOS remains cross-compiled, not natively verified.
+
 ## 0.1.2-preview
 
 - Added product-centered Korean and English GitHub landing pages.

@@ -53,17 +53,16 @@ function Assert-SafeRecursiveTarget {
 
 function Copy-DirectoryClean {
   param([string]$Source, [string]$Destination, [string]$AllowedRoot)
-  if (Test-Path -LiteralPath $Destination) {
-    if (-not $Force) {
-      throw "Target already exists. Re-run with -Force after approval: $Destination"
-    }
-    Assert-SafeRecursiveTarget -Destination $Destination -AllowedRoot $AllowedRoot
-    Remove-Item -LiteralPath $Destination -Recurse -Force
+  $sourcePath = [IO.Path]::GetFullPath($Source).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+  $destinationPath = [IO.Path]::GetFullPath($Destination).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+  if ($sourcePath.StartsWith($destinationPath, [StringComparison]::OrdinalIgnoreCase) -or $destinationPath.StartsWith($sourcePath, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Plugin source and destination must not overlap.'
   }
+  if (Test-Path -LiteralPath $Destination) { throw 'Staging directory already exists.' }
   New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-  $excludedNames = @(".git", ".codex_oracle", ".tmp", "tmp", "sessions", "Docs_local", "docs_local")
+  $includedNames = @(".codex-plugin", "assets", "bin", "doc", "docs", "scripts", "skills", ".mcp.json", ".mcp.windows.json", ".mcp.macos-amd64.json", ".mcp.macos-arm64.json", "README.md", "README.en.md", "RELEASE_NOTES.md", "RELEASE_NOTES.en.md", "CHANGELOG.md", "LICENSE", "SECURITY.md", "SHA256SUMS.txt")
   Get-ChildItem -LiteralPath $Source -Force | Where-Object {
-    $excludedNames -notcontains $_.Name
+    $includedNames -contains $_.Name
   } | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
   }
@@ -115,11 +114,13 @@ if (-not $Apply) {
   exit 0
 }
 
-Copy-DirectoryClean -Source $PluginRoot -Destination $pluginCopyTarget -AllowedRoot $PluginDestinationRoot
-Copy-Item -LiteralPath (Join-Path $pluginCopyTarget ".mcp.windows.json") -Destination (Join-Path $pluginCopyTarget ".mcp.json") -Force
-
 $marketplaceDir = Split-Path -Parent $MarketplacePath
-New-Item -ItemType Directory -Force -Path $marketplaceDir | Out-Null
+$sourcePrefix = $PluginRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+$targetPrefix = $pluginCopyTarget.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+if ($sourcePrefix.StartsWith($targetPrefix, [StringComparison]::OrdinalIgnoreCase) -or $targetPrefix.StartsWith($sourcePrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Plugin source and destination must not overlap.' }
+Assert-SafeRecursiveTarget -Destination $pluginCopyTarget -AllowedRoot $PluginDestinationRoot
+if ((Test-Path -LiteralPath $pluginCopyTarget) -and -not $Force) { throw "Target already exists. Re-run with -Force after approval: $pluginCopyTarget" }
+$replaced = $false
 
 if (Test-Path -LiteralPath $MarketplacePath) {
   $existing = Get-Content -Raw -LiteralPath $MarketplacePath | ConvertFrom-Json
@@ -137,25 +138,69 @@ if (Test-Path -LiteralPath $MarketplacePath) {
     $name = [string](Get-Prop -Object $plugin -Name "name")
     if ($name -ne $pluginName) {
       $plugins += $plugin
+    } elseif (-not $replaced) {
+      $plugins += $entry
+      $replaced = $true
     }
   }
 } else {
   $resolvedName = $MarketplaceName
   $displayName = "Personal"
+  $interface = $null
   $plugins = @()
 }
-$plugins += $entry
+if (-not $replaced) { $plugins += $entry }
 
-$marketplace = [ordered]@{
-  name = $resolvedName
-  interface = [ordered]@{
-    displayName = $displayName
-  }
-  plugins = @($plugins)
-}
+$marketplace = if (Test-Path -LiteralPath $MarketplacePath) { $existing } else { [pscustomobject]@{} }
+if ($null -eq $interface) { $interface = [pscustomobject]@{ displayName = $displayName } }
+$marketplace | Add-Member -NotePropertyName name -NotePropertyValue $resolvedName -Force
+$marketplace | Add-Member -NotePropertyName interface -NotePropertyValue $interface -Force
+$marketplace | Add-Member -NotePropertyName plugins -NotePropertyValue @($plugins) -Force
 $marketplaceJson = ($marketplace | ConvertTo-Json -Depth 20) + "`n"
 $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
-[System.IO.File]::WriteAllText($MarketplacePath, $marketplaceJson, $utf8NoBom)
+$token = [guid]::NewGuid().ToString('N')
+$stage = Join-Path $PluginDestinationRoot ('.oracle-stage-' + $token)
+$backup = Join-Path $PluginDestinationRoot ('.oracle-backup-' + $token)
+$marketplaceTemp = Join-Path $marketplaceDir ('.oracle-marketplace-' + $token + '.json')
+$marketplaceBackup = Join-Path $marketplaceDir ('.oracle-marketplace-backup-' + $token + '.json')
+$movedOld = $false
+$installedNew = $false
+try {
+  Copy-DirectoryClean -Source $PluginRoot -Destination $stage -AllowedRoot $PluginDestinationRoot
+  foreach ($file in Get-ChildItem -LiteralPath $stage -Recurse -File -Force) {
+    $relative = $file.FullName.Substring($stage.Length + 1)
+    if ((Get-FileHash -LiteralPath $file.FullName).Hash -ne (Get-FileHash -LiteralPath (Join-Path $PluginRoot $relative)).Hash) { throw "Staged file differs: $relative" }
+  }
+  $null = Get-Content -LiteralPath (Join-Path $stage '.mcp.windows.json') -Raw | ConvertFrom-Json
+  Copy-Item -LiteralPath (Join-Path $stage '.mcp.windows.json') -Destination (Join-Path $stage '.mcp.json') -Force
+  New-Item -ItemType Directory -Force -Path $marketplaceDir | Out-Null
+  [IO.File]::WriteAllText($marketplaceTemp, $marketplaceJson, $utf8NoBom)
+  if (Test-Path -LiteralPath $pluginCopyTarget) {
+    Move-Item -LiteralPath $pluginCopyTarget -Destination $backup
+    $movedOld = $true
+  }
+  Move-Item -LiteralPath $stage -Destination $pluginCopyTarget
+  $installedNew = $true
+  if (Test-Path -LiteralPath $MarketplacePath) {
+    [IO.File]::Replace($marketplaceTemp, $MarketplacePath, $marketplaceBackup)
+  } else {
+    [IO.File]::Move($marketplaceTemp, $MarketplacePath)
+  }
+} catch {
+  if ($installedNew) {
+    Assert-SafeRecursiveTarget -Destination $pluginCopyTarget -AllowedRoot $PluginDestinationRoot
+    Remove-Item -LiteralPath $pluginCopyTarget -Recurse -Force
+  }
+  if ($movedOld) { Move-Item -LiteralPath $backup -Destination $pluginCopyTarget }
+  throw
+} finally {
+  if (Test-Path -LiteralPath $stage) {
+    Assert-SafeRecursiveTarget -Destination $stage -AllowedRoot $PluginDestinationRoot
+    Remove-Item -LiteralPath $stage -Recurse -Force
+  }
+  if (Test-Path -LiteralPath $marketplaceTemp) { Remove-Item -LiteralPath $marketplaceTemp -Force }
+}
+if ($movedOld) { Write-Output "Previous installation retained at $backup" }
 
 Write-Output "Installed codex_oracle plugin files to $pluginCopyTarget"
 Write-Output "Updated marketplace file $MarketplacePath"

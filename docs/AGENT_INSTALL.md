@@ -1,6 +1,6 @@
 # Agent Install Guide
 
-This guide is written for a Codex app agent installing `codex_oracle` `v0.1.2` from this release repository.
+This guide is written for a Codex app agent installing `codex_oracle` `v0.1.6` from this release repository.
 
 This is a developer preview. The Windows binary is unsigned, macOS binaries are not notarized, and
 macOS execution has not been verified on physical macOS hardware in this development environment.
@@ -22,12 +22,12 @@ The scripts below do not write unless `-Apply` or `--apply` is provided.
 
 ## Required Companion Plugin
 
-`codex_oracle` does not embed Chrome. Live GPT-5.6 Sol with `Pro` use requires:
+`codex_oracle` does not embed Chrome. Live GPT-6 Astra with `Pro` use requires:
 
 - Codex app
 - `@Chrome` plugin: `chrome@openai-bundled`
 - the user's ordinary Chrome session signed into ChatGPT
-- account access and rollout availability for GPT-5.6 Sol with `Pro`
+- account access and rollout availability for GPT-6 Astra with `Pro`
 
 The MCP handoff declares this dependency as:
 
@@ -70,7 +70,7 @@ cleanup. Removing the installed entry is enough to prevent ordinary Codex invoca
 Pin the release tag instead of following moving `main`:
 
 ```powershell
-git clone --branch v0.1.2 --depth 1 https://github.com/Burntgogi/codex_oracle.git
+git clone --branch v0.1.6 --depth 1 https://github.com/Burntgogi/codex_oracle.git
 cd codex_oracle
 ```
 
@@ -119,6 +119,27 @@ If the target already exists, stop and ask before overwriting. Only after approv
 ```powershell
 .\scripts\install-personal.ps1 -Apply -Force
 ```
+
+## Update recovery and runtime checks
+
+Updates copy and hash-check files in a staging folder before replacing the previous installation.
+If a caught error occurs during replacement or marketplace writing, the installer restores the old
+folder. A successful update retains `.oracle-backup-*` beside the plugin and a marketplace backup
+beside `marketplace.json`. Keep these backups until the new installation is verified. Abrupt process
+termination or power loss is not an automatic rollback guarantee; retained backups allow manual recovery.
+Run only one installer at a time for a given destination.
+
+On Windows, after `codex plugin add`, run:
+
+```powershell
+.\scripts\diagnose-install.ps1
+```
+
+The JSON report distinguishes registration, installed files and observed running MCP processes.
+`restart-required` means at least one process differs: reload MCP connections or restart Codex and
+check again. `runtime-unverified` means process inspection was unavailable; it is not a pass.
+`matched` compares the version and binary hash of every observed Oracle process, not a particular task.
+
 
 ## macOS Personal Install
 
@@ -191,7 +212,7 @@ distribution, move from ad hoc local-copy install to a managed release channel:
 5. Run `consult` with `dryRun:true`.
 6. Run `consult_prepare`.
 7. Use `@Chrome` to create a fresh ChatGPT conversation.
-8. Select GPT-5.6 Sol and confirm `Pro`. During UI rollout, `Pro 확장` or `프로 확장` may be
+8. Select GPT-6 Astra and confirm `Pro`. During UI rollout, `Pro 확장` or `프로 확장` may be
    accepted as equivalent visible mode evidence.
 9. Submit according to `handoff.submission.mode`. For `inline`, send
    `handoff.submission.promptText`. For `pasted-text-attachment`, paste/attach `handoff.prompt`,

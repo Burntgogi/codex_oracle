@@ -102,16 +102,16 @@ function Get-JsonStringProperty {
 }
 
 if (-not $SkipCodexList) {
-  $pluginList = & codex plugin list
+  $pluginList = & codex plugin list --json | ConvertFrom-Json
   if ($LASTEXITCODE -ne 0) {
     throw "codex plugin list exited with code $LASTEXITCODE"
   }
-  $matchingLine = $pluginList | Where-Object { $_ -match [regex]::Escape($PluginId) } | Select-Object -First 1
-  if ([string]::IsNullOrWhiteSpace($matchingLine)) {
+  $matchingPlugin = @($pluginList.installed | Where-Object pluginId -eq $PluginId)
+  if ($matchingPlugin.Count -ne 1) {
     throw "codex plugin list does not show $PluginId"
   }
-  if ($matchingLine -notmatch "installed,\s*enabled") {
-    throw "$PluginId is not installed and enabled: $matchingLine"
+  if (-not $matchingPlugin[0].installed -or -not $matchingPlugin[0].enabled) {
+    throw "$PluginId is not installed and enabled"
   }
 }
 
@@ -189,11 +189,11 @@ try {
   if ($responses[1].result.structuredContent.bundle.preview -notmatch "untrusted reference material") {
     throw "installed consult dry-run preview missing untrusted-context preamble"
   }
-  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-5.6-sol-pro") {
-    throw "installed consult dry-run did not resolve to gpt-5.6-sol-pro"
+  if ($responses[1].result.structuredContent.resolved.model -ne "gpt-6-astra-pro") {
+    throw "installed consult dry-run did not resolve to gpt-6-astra-pro"
   }
-  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-5.6 Sol") {
-    throw "installed consult dry-run did not return GPT-5.6 Sol desired model"
+  if ($responses[1].result.structuredContent.resolved.browser.desiredModel -ne "GPT-6 Astra") {
+    throw "installed consult dry-run did not return GPT-6 Astra desired model"
   }
   if ($responses[1].result.structuredContent.resolved.browser.thinkingLabel -ne "Pro") {
     throw "installed consult dry-run did not return Pro thinking label"
@@ -204,11 +204,11 @@ try {
   if (@($responses[2].result.structuredContent.resolved.files) -notcontains $fixtureWorkspaceFile) {
     throw "installed consult_prepare did not resolve fixture from workspaceRoot"
   }
-  if ($responses[2].result.structuredContent.handoff.model -ne "gpt-5.6-sol-pro") {
-    throw "installed consult_prepare did not return gpt-5.6-sol-pro handoff"
+  if ($responses[2].result.structuredContent.handoff.model -ne "gpt-6-astra-pro") {
+    throw "installed consult_prepare did not return gpt-6-astra-pro handoff"
   }
-  if ($responses[2].result.structuredContent.handoff.modelLabel -ne "GPT-5.6 Sol") {
-    throw "installed consult_prepare did not return GPT-5.6 Sol model label"
+  if ($responses[2].result.structuredContent.handoff.modelLabel -ne "GPT-6 Astra") {
+    throw "installed consult_prepare did not return GPT-6 Astra model label"
   }
   if ($responses[2].result.structuredContent.handoff.thinkingLabel -ne "Pro") {
     throw "installed consult_prepare did not return Pro thinking label"

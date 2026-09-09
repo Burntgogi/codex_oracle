@@ -1,17 +1,17 @@
-![codex_oracle 픽셀아트 배너](assets/codex_oracle-title.png)
+![codex_oracle 픽셀아트 배너](assets/codex_oracle-title-astra.png)
 
 <h1 align="center">codex_oracle</h1>
 
 <p align="center">
-  Codex의 작업 맥락을 <strong>GPT-5.6 Sol + Pro</strong> 웹 세션에 전달하고,<br>
+  Codex의 작업 맥락을 <strong>GPT-6 Astra + Pro</strong> 웹 세션에 전달하고,<br>
   계획·설계·코드 검토 피드백을 다시 Codex로 가져오는 로컬 플러그인입니다.
 </p>
 
 <p align="center">
   <a href="RELEASE_NOTES.md"><img src="https://img.shields.io/badge/status-developer_preview-f3a6ca" alt="Developer Preview"></a>
-  <a href="RELEASE_NOTES.md"><img src="https://img.shields.io/badge/release-v0.1.2-315BFF" alt="Release v0.1.2"></a>
-  <a href="RELEASE_NOTES.md#검증-결과"><img src="https://img.shields.io/badge/Windows-live_verified-2f80ed" alt="Windows verified"></a>
-  <a href="RELEASE_NOTES.md#알려진-제한"><img src="https://img.shields.io/badge/macOS-dry--run_only-8a78d6" alt="macOS dry-run"></a>
+  <a href="RELEASE_NOTES.md"><img src="https://img.shields.io/badge/release-v0.1.6-315BFF" alt="Release v0.1.6"></a>
+  <a href="docs/VERIFICATION.md"><img src="https://img.shields.io/badge/Windows-live_verified-2f80ed" alt="Windows verified"></a>
+  <a href="docs/VERIFICATION.md"><img src="https://img.shields.io/badge/macOS-dry--run_only-8a78d6" alt="macOS dry-run"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3aa675" alt="MIT License"></a>
 </p>
 
@@ -27,7 +27,7 @@
 
 - 현재 Codex 작업과 선택한 파일을 집중된 검토 프롬프트로 만듭니다.
 - 외부 `@Chrome` 플러그인이 로그인된 사용자 Chrome에서 새 ChatGPT 대화를 엽니다.
-- GPT-5.6 Sol의 `Pro` 응답을 회수해 Codex 작업의 계획·설계·리뷰 자료로 사용합니다.
+- GPT-6 Astra의 `Pro` 응답을 회수해 Codex 작업의 계획·설계·리뷰 자료로 사용합니다.
 
 ## 작동 방식
 
@@ -38,13 +38,15 @@ Codex 작업 + 선택 파일
   codex_oracle 준비
           │  workspaceRoot 안에서만 파일 묶음 생성
           ▼
- @Chrome → ChatGPT Web → GPT-5.6 Sol + Pro
+ @Chrome → ChatGPT Web → GPT-6 Astra + Pro
           │
           ▼
   consult_finalize → Codex 피드백
 ```
 
-기본 라이브 경로는 `consult_prepare` → `@Chrome` → `consult_finalize`입니다.
+기본 라이브 경로는 `consult_prepare` → `@Chrome` → `consult_checkpoint` → `consult_finalize`입니다.
+확정된 대화 URL을 저장하면 중단 후 `reattach`로 같은 대화에서 복구할 수 있습니다.
+임시 `WEB:` URL은 같은 탭에서 확정 주소로 바뀔 때까지 기다리며 요청을 재전송하지 않습니다.
 `codex_oracle`은 Chrome을 내장하거나 로그인 정보를 읽지 않습니다.
 
 ## 필요한 것
@@ -52,14 +54,14 @@ Codex 작업 + 선택 파일
 - Codex app
 - `chrome@openai-bundled` 플러그인
 - ChatGPT에 로그인된 사용자의 Chrome 세션
-- GPT-5.6 Sol과 `Pro`를 사용할 수 있는 계정
+- GPT-6 Astra과 `Pro`를 사용할 수 있는 계정
 - Windows x64, macOS Apple Silicon 또는 macOS Intel
 
 ## 빠른 설치
 
 Codex 에이전트에게 다음과 같이 요청하는 방법을 권장합니다.
 
-> `Burntgogi/codex_oracle`의 `v0.1.2` 개발자 프리뷰를 설치해 주세요. 먼저 체크섬과
+> `Burntgogi/codex_oracle`의 `v0.1.6` 개발자 프리뷰를 설치해 주세요. 먼저 체크섬과
 > 대상 경로를 확인하고 dry-run 결과를 보여 준 뒤, 내 승인을 받아 개인 marketplace에
 > 설치하세요. `codex_oracle@personal`과 `chrome@openai-bundled`가 활성화됐는지 검증하고
 > 새 작업에서 작은 dry-run으로 첫 호출을 점검하세요.
@@ -67,7 +69,7 @@ Codex 에이전트에게 다음과 같이 요청하는 방법을 권장합니다
 직접 설치할 때는 움직이는 `main` 대신 릴리스 태그를 사용합니다.
 
 ```powershell
-git clone --branch v0.1.2 --depth 1 https://github.com/Burntgogi/codex_oracle.git
+git clone --branch v0.1.6 --depth 1 https://github.com/Burntgogi/codex_oracle.git
 cd codex_oracle
 .\scripts\install-personal.ps1
 # 출력 경로를 확인하고 승인한 뒤:
@@ -85,7 +87,7 @@ macOS에서는 `sh scripts/install-personal.sh`로 dry-run을 확인한 다음 �
 Codex에서 `codex_oracle`을 호출하며 집중된 질문과 필요한 파일만 지정합니다.
 
 ```text
-codex_oracle로 이 구현 계획을 GPT-5.6 Sol + Pro에 전달해 핵심 블로커와 개선안을 검토해 줘.
+codex_oracle로 이 구현 계획을 GPT-6 Astra + Pro에 전달해 핵심 블로커와 개선안을 검토해 줘.
 먼저 dry-run으로 파일 범위를 확인하고, @Chrome을 통해 새 ChatGPT 대화에서 실행한 뒤
 결과를 현재 Codex 작업으로 가져와 줘.
 ```
@@ -106,11 +108,16 @@ macOS는 실제 장비에서 실행하지 않았습니다. Windows 바이너리�
 
 ## 검증 상태
 
-`v0.1.2`는 Go 테스트와 정적 검사, 세 플랫폼 재현 빌드, 체크섬, 패키지 스모크,
-Windows 설치본 검증, `GPT-5.6 Sol + Pro` Chrome-assisted live E2E를 통과한 개발자
-프리뷰입니다. 자세한 변경과 제한은 [릴리즈 노트](RELEASE_NOTES.md)를 확인하세요.
+`v0.1.6`는 Go 테스트·정적 검사, Windows 실행, macOS 교차 빌드, 체크섬과 복구 스모크를 통과했습니다.
+실제 Codex에 0.1.6을 설치하고 재시작한 뒤 웹 `6 Pro` 요청·응답 회수·세션 완료를 검증했습니다.
+생성 중 강제 중단·복구는 동작 코드가 같은 0.1.5에서 확인했습니다. macOS 실제 실행은 미검증입니다.
+자세한 근거와 한계는 [검증 기록](docs/VERIFICATION.md)을 확인하세요.
 
 ## 보안
+
+기본 세션 저장은 메타데이터만 보존하며 프롬프트·답변 본문은 저장하지 않습니다.
+본문 저장이 필요한 경우에만 `ORACLE_SESSION_CONTENT_MODE=full`을 설정하세요.
+로컬 세션은 `session_delete`로 삭제할 수 있습니다. ChatGPT 웹 대화 기록은 별도로 남습니다.
 
 - `OPENAI_API_KEY`, Chrome 쿠키 또는 로그인 자격 증명을 요구하거나 저장하지 않습니다.
 - 선택 파일은 명시한 `workspaceRoot` 안에서만 해석하고 경로·링크가 바뀌면 닫힌 상태로 실패합니다.
@@ -122,7 +129,7 @@ Windows 설치본 검증, `GPT-5.6 Sol + Pro` Chrome-assisted live E2E를 통과
 ## 이전 0.1 계열 릴리스
 
 `0.1.0-preview`와 `0.1.1-preview`는 이전 개발자 프리뷰 기록으로 유지합니다. 새 설치에는
-현재 검증된 `v0.1.2` 태그를 사용하세요.
+현재 검증된 `v0.1.6` 태그를 사용하세요.
 
 ## 감사
 

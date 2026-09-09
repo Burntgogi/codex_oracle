@@ -107,20 +107,20 @@ for item in ignored:
     fields = [*resolved["files"], item.get("pattern", ""), item.get("path", ""), item.get("reason", "")]
     if any(os.environ["OUTSIDE_DESCENDANT"] in str(field) for field in fields):
         raise SystemExit("consult leaked an outside descendant path")
-if resolved["model"] != "gpt-5.6-sol-pro":
-    raise SystemExit("consult dry-run did not resolve to gpt-5.6-sol-pro")
-if resolved["browser"]["desiredModel"] != "GPT-5.6 Sol":
-    raise SystemExit("consult dry-run did not return GPT-5.6 Sol desired model")
+if resolved["model"] != "gpt-6-astra-pro":
+    raise SystemExit("consult dry-run did not resolve to gpt-6-astra-pro")
+if resolved["browser"]["desiredModel"] != "GPT-6 Astra":
+    raise SystemExit("consult dry-run did not return GPT-6 Astra desired model")
 if resolved["browser"]["thinkingLabel"] != "Pro":
     raise SystemExit("consult dry-run did not return Pro thinking label")
 prepared = responses[2]["result"]["structuredContent"]
 if prepared["resolved"]["files"] != [os.environ["WORKSPACE_FILE"]]:
     raise SystemExit("consult_prepare did not resolve fixture from workspaceRoot")
 handoff = prepared["handoff"]
-if handoff["model"] != "gpt-5.6-sol-pro":
-    raise SystemExit("consult_prepare did not return gpt-5.6-sol-pro")
-if handoff["modelLabel"] != "GPT-5.6 Sol":
-    raise SystemExit("consult_prepare did not return GPT-5.6 Sol")
+if handoff["model"] != "gpt-6-astra-pro":
+    raise SystemExit("consult_prepare did not return gpt-6-astra-pro")
+if handoff["modelLabel"] != "GPT-6 Astra":
+    raise SystemExit("consult_prepare did not return GPT-6 Astra")
 if handoff["thinkingLabel"] != "Pro":
     raise SystemExit("consult_prepare did not return Pro")
 if handoff["orchestration"]["requiredPlugin"] != "chrome@openai-bundled":
