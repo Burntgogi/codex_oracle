@@ -11,6 +11,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptDir "marketplace-path.ps1")
 $repoRoot = Split-Path -Parent $scriptDir
 if ([string]::IsNullOrWhiteSpace($PluginRoot)) {
   $PluginRoot = $repoRoot
@@ -80,6 +81,7 @@ if ($pluginName -ne "codex_oracle") {
 
 $pluginCopyTarget = Join-Path $PluginDestinationRoot $pluginName
 $pluginCopyTarget = [System.IO.Path]::GetFullPath($pluginCopyTarget)
+$pluginSourcePath = Get-LocalPluginSourcePath -MarketplacePath $MarketplacePath -PluginTarget $pluginCopyTarget
 $mcpTemplate = Join-Path $PluginRoot ".mcp.windows.json"
 if (-not (Test-Path -LiteralPath $mcpTemplate)) {
   throw "Windows MCP template not found: $mcpTemplate"
@@ -89,7 +91,7 @@ $entry = [ordered]@{
   name = $pluginName
   source = [ordered]@{
     source = "local"
-    path = "./plugins/$pluginName"
+    path = $pluginSourcePath
   }
   policy = [ordered]@{
     installation = "AVAILABLE"
@@ -106,6 +108,7 @@ $plan = [ordered]@{
   marketplacePath = $MarketplacePath
   marketplaceName = $MarketplaceName
   mcpTemplate = $mcpTemplate
+  entry = $entry
   approvalRequired = -not $Apply
 }
 
