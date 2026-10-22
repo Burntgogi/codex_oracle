@@ -8,15 +8,29 @@ import sys
 import uuid
 
 
+def plugin_source_path(target, marketplace):
+    root = marketplace.resolve().parent
+    if root.name.lower() == 'plugins' and root.parent.name.lower() == '.agents':
+        root = root.parent.parent
+    try:
+        relative = target.relative_to(root)
+    except ValueError:
+        raise ValueError('Plugin destination must be inside the marketplace root.') from None
+    if not relative.parts:
+        raise ValueError('Plugin destination must be inside the marketplace root.')
+    return './' + relative.as_posix()
+
+
 def install(source, target, marketplace, name, template, force):
     source, target, marketplace = map(Path, (source, target, marketplace))
     source, target = source.resolve(), target.resolve()
     if source == target or source in target.parents or target in source.parents:
         raise ValueError('Plugin source and destination must not overlap.')
+    source_path = plugin_source_path(target, marketplace)
     if target.exists() and not force:
         raise ValueError('Target already exists. Re-run with --force after approval.')
     data = json.loads(marketplace.read_text(encoding='utf-8-sig')) if marketplace.exists() else {}
-    entry = {'name': 'codex_oracle', 'source': {'source': 'local', 'path': './plugins/codex_oracle'},
+    entry = {'name': 'codex_oracle', 'source': {'source': 'local', 'path': source_path},
              'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}
     plugins, replaced = [], False
     for plugin in data.get('plugins', []):

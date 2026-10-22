@@ -82,6 +82,11 @@ macOS에서는 `sh scripts/install-personal.sh`로 dry-run을 확인한 다음 �
 `sh scripts/install-personal.sh --apply`를 사용합니다. 전체 Windows/macOS 절차와 업데이트
 방법은 [에이전트 설치 가이드](docs/AGENT_INSTALL.md)를 확인하세요.
 
+사용자 지정 설치 대상은 마켓플레이스 루트 안에 있어야 합니다.
+`.agents/plugins/marketplace.json`의 루트는 `.agents`의 상위 폴더이며,
+다른 위치의 JSON은 그 파일의 상위 폴더를 루트로 사용합니다.
+설치기는 실제 대상의 상대 경로를 등록하고 루트 밖의 대상은 쓰기 전에 거부합니다.
+
 ## 첫 사용
 
 Codex에서 `codex_oracle`을 호출하며 집중된 질문과 필요한 파일만 지정합니다.

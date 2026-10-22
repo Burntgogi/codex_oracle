@@ -82,6 +82,11 @@ On macOS, inspect the dry-run with `sh scripts/install-personal.sh`, then run
 `sh scripts/install-personal.sh --apply` after approval. See the [agent install guide](docs/AGENT_INSTALL.md)
 for the complete Windows/macOS and update procedures.
 
+Custom installation destinations must stay inside the marketplace root.
+For `.agents/plugins/marketplace.json`, this is the parent of `.agents`;
+for a JSON file elsewhere, it is the file's parent directory.
+The installers register the actual relative destination and reject destinations outside this root before writing.
+
 ## First use
 
 Invoke `codex_oracle` from Codex with one focused question and only the files needed for review.

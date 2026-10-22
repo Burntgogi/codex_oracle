@@ -10,6 +10,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptDir "marketplace-path.ps1")
 $repoRoot = Split-Path -Parent $scriptDir
 if ([string]::IsNullOrWhiteSpace($PluginRoot)) {
   $PluginRoot = $repoRoot
@@ -63,11 +64,13 @@ function Get-Prop {
   return $prop.Value
 }
 
+$pluginCopyTarget = [IO.Path]::GetFullPath((Join-Path $PluginDestinationRoot $pluginName))
+$pluginSourcePath = Get-LocalPluginSourcePath -MarketplacePath $MarketplacePath -PluginTarget $pluginCopyTarget
 $entry = [ordered]@{
   name = $pluginName
   source = [ordered]@{
     source = "local"
-    path = "./plugins/$pluginName"
+    path = $pluginSourcePath
   }
   policy = [ordered]@{
     installation = "AVAILABLE"
@@ -110,7 +113,6 @@ if ($marketplaceExists) {
 }
 $plugins += $entry
 
-$pluginCopyTarget = Join-Path $PluginDestinationRoot $pluginName
 $proposedMarketplace = [ordered]@{
   name = $resolvedMarketplaceName
   interface = [ordered]@{
