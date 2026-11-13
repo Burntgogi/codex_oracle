@@ -26,7 +26,15 @@ Use this skill when a second model should review a focused prompt and file set.
 8. For the `chatgpt-pro-heavy` preset, treat model evidence as two controls: select `GPT-6 Astra`
    as the model and confirm `Pro` as the thinking/mode label. During UI rollout, `Pro 확장` or
    `프로 확장` may be accepted as equivalent visible mode evidence. Do not require one combined
-   `GPT-6 Astra Pro` string. If either control is unavailable or ambiguous, stop before submission.
+   `GPT-6 Astra Pro` string. If the UI instead selects `Latest`, shows generation `6` (for example
+   `6 Pro`), and confirms `Pro`, an explicit operator confirmation that this selection matches
+   the requested target permits submission. Reuse that confirmation for the unchanged selection
+   in the same session; do not ask again. Without it, ask once before submission. Record the
+   observed model menu, generation, mode, and operator confirmation separately in the task's
+   handoff notes. `Latest` alone is not a permanent alias for Astra, and these visible labels do
+   not verify a hidden backend model ID. Missing Pro, a different explicit model such as Sol,
+   or changed/ambiguous evidence must not inherit an earlier alias confirmation. Keep the
+   prepared model, digest, and nonce unchanged; never silently substitute another model.
 9. Compatibility: callers may still provide `gpt-5.5-pro`, but prepared handoffs always target
    `gpt-6-astra-pro`.
 10. Pass `handoffDigest` and `handoffNonce` from the prepared handoff into `consult_finalize`.

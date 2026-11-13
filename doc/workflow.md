@@ -13,7 +13,8 @@ Codex uses the external `@Chrome` plugin to operate the user's ordinary signed-i
 6. Call `consult_prepare`.
 7. Use `@Chrome` (`chrome@openai-bundled`) to open or claim `https://chatgpt.com/`.
 8. Create a fresh ChatGPT conversation for this consult.
-9. Verify GPT-6 Astra model selection and `Pro` mode/thinking evidence when requested.
+9. Verify GPT-6 Astra model selection and `Pro` mode/thinking evidence when requested. For a
+   `Latest` UI alias, follow the [model-selection evidence rules](chrome-assisted-workflow.md#model-selection-evidence).
 10. Submit according to `handoff.submission.mode`: send `handoff.submission.promptText` directly
     for `inline`, or paste `handoff.prompt` as a pasted-text attachment and then send
     `handoff.submission.promptText` for `pasted-text-attachment`.

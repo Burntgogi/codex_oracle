@@ -213,7 +213,10 @@ distribution, move from ad hoc local-copy install to a managed release channel:
 6. Run `consult_prepare`.
 7. Use `@Chrome` to create a fresh ChatGPT conversation.
 8. Select GPT-6 Astra and confirm `Pro`. During UI rollout, `Pro 확장` or `프로 확장` may be
-   accepted as equivalent visible mode evidence.
+   accepted as equivalent visible mode evidence. For `Latest` with generation `6` and `Pro`,
+   follow the [model-selection evidence rules](../doc/chrome-assisted-workflow.md#model-selection-evidence):
+   record the labels and explicit operator confirmation, reusing it for an unchanged selection
+   in the same session. `Latest` alone does not identify a fixed model.
 9. Submit according to `handoff.submission.mode`. For `inline`, send
    `handoff.submission.promptText`. For `pasted-text-attachment`, paste/attach `handoff.prompt`,
    save or close the pasted-text editor modal, then send `handoff.submission.promptText`. A user

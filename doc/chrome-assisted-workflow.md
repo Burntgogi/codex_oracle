@@ -96,7 +96,7 @@ needed.
 2. Run `consult_prepare`.
 3. Use `@Chrome` to open or claim `https://chatgpt.com/`.
 4. Create a new conversation.
-5. Select GPT-6 Astra and confirm `Pro` when the preset asks for heavy Pro review.
+5. Confirm the requested model and `Pro` using the [model-selection evidence rules](#model-selection-evidence).
 6. Submit according to `handoff.submission.mode`:
    - `inline`: place `handoff.submission.promptText` in the composer and send.
    - `pasted-text-attachment`: paste/attach `handoff.prompt` as the Oracle Consult Bundle, save or
@@ -113,12 +113,35 @@ needed.
    and `runtime.conversationUrl`.
 10. Verify the advice locally before applying it.
 
+## Model-selection evidence
+
+The handoff's `model` and `modelLabel` describe the requested target. They are not evidence of
+the model selected in the browser. Check the visible model menu, generation label, and mode
+separately. `Pro 확장` and `프로 확장` are accepted visible Pro mode labels.
+
+| Observed selection | Action before submission |
+| --- | --- |
+| `GPT-6 Astra` and `Pro` | Continue under the existing invocation authorization. |
+| `Latest`, generation `6` (for example `6 Pro`), and `Pro` | Continue if the operator explicitly confirmed that this selection matches the requested target. Otherwise ask once. |
+| The same alias selection already confirmed in this session | Reuse the confirmation; do not ask again. |
+| `Latest` without generation evidence, or missing Pro | Resolve the missing evidence before submission. |
+| Explicit `GPT-5.6 Sol` or another model | Do not substitute it for Astra or reuse an alias confirmation. |
+| Labels change after confirmation | Recheck the changed evidence; the earlier confirmation covers only the unchanged selection. |
+
+Keep a bounded note in the current task handoff with `requested target`, `observed model menu`,
+`observed generation`, `observed mode`, and `operator confirmation` as separate facts. Include
+only the model-selection evidence, not account details, conversation contents, browser history,
+or credentials. The UI labels and operator confirmation do not verify a hidden backend model ID.
+Do not permanently map `Latest` to Astra or rewrite the prepared model, digest, or nonce to match
+an alias. No additional send confirmation is needed once the model evidence is resolved.
+
 ## Failure Handling
 
 - Login: the user completes sign-in directly in Chrome; credentials are not pasted into Codex chat.
 - CAPTCHA/human verification: do not bypass; wait for the user or finalize as failed.
-- Model ambiguity: ask the user to select GPT-6 Astra and `Pro`, or fail closed. During UI rollout,
-  `Pro 확장` or `프로 확장` may be accepted as equivalent visible mode evidence.
+- Model ambiguity: apply the model-selection evidence rules above. Reuse a prior explicit
+  confirmation for the same alias selection in the same session; stop if required evidence
+  remains unresolved. Never silently select Sol.
 - Pasted-text attachment modal: save/close it before pressing send; otherwise ChatGPT may keep the
   composer in edit state.
 - Long responses: keep the prepared session and finalize once the visible answer is captured.
